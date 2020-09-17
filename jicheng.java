@@ -50,6 +50,6 @@ public class jicheng{
 		p2.bottom = 4;
 		p2.areaMyGraphic();
 		p2.PerimeterMyGraphic();
-		System.out.println("三角形面积" + p1.areaMyGraphic() + "三角形周长" + p1.PerimeterMyGraphic());
+		System.out.println("三角形面积" + p2.areaMyGraphic() + "三角形周长" + p2.PerimeterMyGraphic());
 	}
 }
