@@ -1,0 +1,29 @@
+package keshe001;
+import java.io.IOException;
+	public class LoginNew{
+		public void main(String args[]) {
+			//系统的主函数，系统的入口
+		}
+	}
+	public class LoginForm() {
+		private UserDAO dao;
+			//向界面容器中增加界面控件并显示窗口
+		}
+		public class UserDAO() {
+			private DBUtil db;
+			//登录按钮的事件处理方法调用，用于调用与数据库相关的方法完成登录处理，
+			//如果登录成功则进入主界面，否则提示错误信息
+					public boolean findUser() {
+			//根据用户名和密码查询数据库中是否存在该用户，
+			//如果存在则返回ture，否则返回false，该方法需要调用getConnection（）方法连接数据库
+			try {
+				getConnection();}
+			catch(e) {}
+			return false;}
+		}
+		public  class DBUtil() {
+			//获取数据库连接对象Connection来连接数据库；
+			public void getConnection(){
+				//Connection
+			}
+		}
