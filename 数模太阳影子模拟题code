@@ -1,0 +1,278 @@
+附录1：由时角、维度、赤尾度求高度角和影长（python）
+import math as m
+import numpy as np
+from sympy import *
+δ = m.radians(-12.1)
+φ = m.radians(39.54)
+t = m.radians(44.88)
+a = m.sin(φ)*m.sin(δ)+m.cos(φ)*m.cos(δ)*m.cos(t)
+H = m.asin(a)
+print("sin(φ)=:",m.sin(φ))
+print("cos(δ)=:",m.sin(δ))
+print("sin(t)=:",m.sin(t))
+H = np.rad2deg(H)
+print("高度角为：",H)
+ying = 3/m.tan(m.radians(H))
+print("影长：",ying)
+
+附录2：由日期求赤尾度（python）
+from sympy import *
+import math as m
+x = symbols('x')
+month = 10
+day = 22
+hour = 9.00  # 太阳时为11:30AM
+Phi = 39  # 纬度φ为
+A = 43.5  # 海拔高度，单位是km
+Beta = 0  # 由于是水平面，所以平面倾角β=0
+Gamma = 0  # 无特别指出，表面方位角为0
+# n()是一年里的第几天
+def n():
+    d_num = 0
+    for m in range(1, month):
+        if m in [1, 3, 5, 7, 8, 10, 12]:
+            d_num += 31
+        elif m in [2]:
+            d_num += 28
+        else:
+            d_num += 30
+    d_num += day
+    return d_num
+def angle(Theta, Delta, Phi, Beta, Gamma, Omega):
+    angle = cos(Theta * pi / 180) - sin(Delta * pi / 180) * sin(Phi * pi / 180) * cos(Beta * pi / 180) + sin(
+        Delta * pi / 180) * cos(Phi * pi / 180) * sin(Beta * pi / 180) * cos(Gamma * pi / 180) \
+ \
+            - cos(Delta * pi / 180) * cos(Phi * pi / 180) * cos(Beta * pi / 180) * cos(Omega * pi / 180) - cos(
+        Delta * pi / 180) * sin(Phi * pi / 180) * sin(Beta * pi / 180) * cos(Gamma * pi / 180) * cos(Omega * pi / 180) \
+ \
+            - cos(Delta * pi / 180) * sin(Beta * pi / 180) * sin(Gamma * pi / 180) * sin(Omega * pi / 180)
+# return angle
+# 弦截法迭代求根
+def Secant_Method(fx, a, b):
+    x0 = a  # 区间下限
+    x1 = b  # 区间上限
+    x_list = [x1]
+    i = 0
+    def f(xn):
+        f = fx.subs(x, xn)
+        return f.evalf()
+    while True:
+        x2 = x1 - f(x1) * (x1 - x0) / (f(x1) - f(x0))
+        x0 = x1
+        x1 = x2
+        x_list.append(x2.round(1))
+        if len(x_list) > 1:
+            i += 1
+            error = abs((x_list[-1] - x_list[-2]) / x_list[-1])
+            if error < 10 ** (-6):
+                # print(f'迭代第{i}次后，误差小于10^-6')
+                break
+        else:
+            pass
+    return x_list[-1]
+# 日子数
+n = n()
+print(f'{month}月{day}日是一年里的第{n}天')
+# 赤纬角δ的计算
+Delta = (23.45 * sin(360 * (284 + n) / 365 * pi / 180))
+# bb=2*pi*(n-1)/365
+#cc=0.006918-0.399912*m.cos(bb)+0.070257*m.sin(bb)-0.006758*m.cos(2*bb)-0.002697*m.cos(3*bb)
+#cw=m.degrees(cc)
+print(f'赤纬角δ：{Delta.round(1)}°')
+
+附录3：求解拟合方程的最小值（MATLAB）
+%拟合函数的最值
+syms k
+df=diff(0.1489*k^2-(3.752)*k+24.13);
+f=inline('0.1489*k^2-(3.752)*k+24.13');
+k=solve(df)
+y=f(k)
+
+附录4：非线性回归拟合杆长和纬度（MATLAB）
+% 杆长计算
+s=10.6284*pi*180;
+t=14.7:0.05:15.7;
+x=[1.0365,1.0699,1.1038,1.1383,1.1732,1.2087,1.2448,1.2815,1.3189,1.3568,1.3955,1.4349,1.4751,1.516,1.5577,1.6003,1.6438,1.6882,1.7337,1.7801,1.8277];
+y=[0.4973,0.5029,0.5085,0.5142,0.5198,0.5255,0.5311,0.5368,0.5426,0.5483,0.5541,0.5598,0.5657,0.5715,0.5774,0.5833,0.5892,0.5952,0.6013,0.6074,0.6135];
+l=sqrt(x.^2+y.^2);
+f=@(a,t)a(1)*sqrt((sin(s)*sin(a(2))+cos(s)*cos(a(2))*cos((t-12.5991)*15*pi/180)).^(-2)-1);
+[a,j]=lsqcurvefit(f,[3,0.6],t,l)
+
+附录5：非线性回归的参数求解（MATLAB）
+%附件2
+clc;clear;
+x=[12.683:0.05:13.683];
+y = [1.247256205 1.22279459 1.198921486 1.175428964 1.152439573 1.12991747 1.10783548 1.086254206 1.065081072 1.044446265,1.024264126 1.004640314 0.985490908 0.966790494 0.948584735 0.930927881 0.91375175 0.897109051 0.880973762 0.865492259 0.850504468];
+myfunc = inline('beta(1)*sqrt((sin(beta(2))*sin(beta(3))+cos(beta(2))*cos(beta(3))*cos((x+(beta(4)-120)/15-12)*pi/12)).^(-2)-1)','beta','x');
+options = statset('MaxIter', 1000);
+[beta,Res] = nlinfit(x,y,myfunc,[2,0.7,0,80],options);
+a=beta(1),b=beta(2),k=beta(3),s=beta(4)
+rsqr = 1-(1/10)*sum(Res.^2)/var(y)
+xx=[12.683:0.05:13.683];
+yy=a*sqrt((sin(b)*sin(k)+cos(b)*cos(k)*cos((x+(s-120)/15-12)*pi/12)).^(-2)-1);
+plot(x,y,'o',xx,yy);
+
+%附件3
+clc;clear;
+x=[13.15:0.05:14.15];
+y =[3.53314218400000 3.54676802900000 3.56179764300000 3.57810071500000 3.59575078300000 3.61493428000000 3.63542598300000 3.65721827200000 3.68054111500000 3.70516783600000 3.73127802500000 3.75891791100000 3.78808788800000 3.81870101500000 3.85080961900000 3.88458522000000 3.91991182800000 3.95687599200000 3.99553479000000 4.03575083500000 4.07786305900000];
+myfunc = inline('beta(1)*sqrt((sin(beta(2))*sin(beta(3))+cos(beta(2))*cos(beta(3))*cos((x+(beta(4)-120)/15-12)*pi/12)).^(-2)-1)','beta','x');
+options = statset('MaxIter', 1000);
+[beta,Res] = nlinfit(x,y,myfunc,[2,0.7,0,108],options);
+a=beta(1),b=beta(2),k=beta(3),s=beta(4)
+rsqr = 1-(1/10)*sum(Res.^2)/var(y)
+xx=[13.15:0.05:14.15];
+yy=a*sqrt((sin(b)*sin(k)+cos(b)*cos(k)*cos((x+(s-120)/15-12)*pi/12)).^(-2)-1);
+plot(x,y,'o',xx,yy);
+
+附录6：视频处理（MATLAB）
+fileName = 'Appendix4.avi'; 
+obj = VideoReader(fileName);
+numFrames = obj.NumberOfFrames;% 帧的总数
+for k=1:3000:60000;
+frame = read(obj,k);
+imshow(frame);%显示帧
+imwrite(frame,strcat(num2str(k),'.jpg'),'jpg');% 保存帧
+end
+
+附录7：图片处理，灰度二值化代码（MATLAB）：
+clear;
+clc;
+fileName = 'Appendix4.avi';
+obj = VideoReader(fileName);
+%% 从视频中提取出图片并计算出端点的像素坐标
+n=0;
+for i=1:3000:obj.NumberOfFrames
+ n=n+1;
+ video{n} = read(obj, i); % first frame only 获取视频中的 21 帧图片
+ %figure,I=imshow(video{n});
+ %saveas(I,strcat(num2str(n),'.jpg'));
+end
+%% 获取二值图（9:34）最后一帧
+last = read(obj, inf); % last frame only 获取视频中的最后一帧图片
+b1 = last(810:930,800:1700,:);
+subplot(5,1,1),imshow(b1);
+title('彩色图片');
+c1 = rgb2gray(b1);
+subplot(5,1,2),imshow(c1);
+title('灰度图片');
+d1 = im2bw(c1,0.81);
+subplot(5,1,3),imshow(d1);
+title('二值图片');
+[z,l] = bwlabel(~d1);
+index = z==z(50,20);
+d1(~index) = 1;
+subplot(5,1,4),imshow(d1);
+title('二值降噪图片');
+%subplot(5,1,5),imshow(d1);
+%title('影端点的轨迹');
+hold on,plot(x0(:,2),x0(:,1),'r*');
+
+附录8：退火代码（MATLAB）
+clear all; %清除所有变量
+close all; %清图
+clc ;      %清屏
+C=[
+   2.424024024 8.9;
+2.391081081 8.9333;
+2.357837838 8.9666;
+2.324834835 9;
+2.315825826 9.0333;
+2.276546547 9.06663;
+2.246546547 9.09996;
+2.207417417 9.13329;
+2.176066066 9.16662;
+2.162462462 9.19995;
+2.121861862 9.23328;
+2.105255255 9.26661;
+2.09039039 9.29994;
+2.054144144 9.33327;
+2.027087087 9.3666;
+2.003063063 9.39993;
+1.966996997 9.43326;
+1.94 9.46659;
+1.912942943 9.49992;
+1.900900901 9.53325;
+1.876876877 9.56658;
+1.858858859 9.59991;];%影长与时间坐标21个
+    
+n=size(C,1); %TSP问题的规模
+T=100*n;     %初始温度
+L=100;       %马尔科夫链的长度
+K=0.99;      %衰减参数
+%结构体
+city=struct([]);
+
+for i=1:n
+    city(i).x=C(i,1);
+    city(i).y=C(i,2);
+end
+
+l=1;        %统计迭代次数
+len(l)=func5(city,n); %每次迭代后路线的长度
+
+figure(1);
+
+while T>0.001
+ %多次迭代扰动，温度降低前多次试验
+    for i=1:L
+        %计算原路线总距离
+        len1=func5(city,n);
+        %产生随机扰动
+        %随机置换两个不同的城市的坐标
+        p1=floor(1+n*rand);
+        p2=floor(1+n*rand);
+        while p1==p2
+            p1=floor(1+n*rand);
+            p2=floor(1+n*rand);
+        end
+        tmp_city=city;
+        %%交换元素
+        tmp=tmp_city(p1);
+        tmp_city(p1)=tmp_city(p2);
+        tmp_city(p2)=tmp;
+        %计算新路线总距离
+        len2=func5(tmp_city,n);
+        %新老距离的差值，相当于能量
+        delta_e=len2-len1;
+        %新路线好于旧路线，用新路线替代旧路线
+        if delta_e<0
+            city=tmp_city;
+        else
+            %以一定概率选择是否接受
+            if exp(-delta_e/T)>rand()
+                city=tmp_city;
+            end
+        end
+    end
+    l=l+1;          %迭代次数加1
+    
+    %计算新路线的距离
+    len(l)=func5(city,n);
+    %温度不断下降
+    T=T*K;
+    for i=1:n-1
+        plot([city(i).x,city(i+1).x],[city(i).y,city(i+1).y],'bo-');
+        hold on;
+    end
+    plot([city(n).x,city(1).x],[city(n).y,city(1).y],'ro-');
+    
+    title(['最优距离:',num2str(len(l))]);%%num2str将数字转为字符数组
+    hold off;
+    pause(0.005);
+end
+
+figure(2)
+plot(len);
+xlabel('迭代次数');
+ylabel('目标函数值');
+title('适应度进化曲线');
+
+%计算距离的函数
+function len=func5(city,n)
+len=0;
+for i=1:n-1
+    len=len+sqrt((city(i).x-city(i+1).x)^2+(city(i).y-city(i+1).y)^2);
+end
+len=len+sqrt((city(n).x-city(1).x)^2+(city(n).y-city(1).y)^2);
+end
